@@ -1,22 +1,18 @@
-
 package at.ac.tgm.mwallpach.warehouse2.io;
 
-import at.ac.tgm.mwallpach.warehouse2.model.WarehouseData;
 import jakarta.jms.*;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 public class Receiver {
 
-    Logger logger = LoggerFactory.getLogger(Receiver.class);
+    private final Logger logger = LoggerFactory.getLogger(Receiver.class);
 
-    private static String user = ActiveMQConnection.DEFAULT_USER;
-    private static String password = ActiveMQConnection.DEFAULT_PASSWORD;
-    private static String url = ActiveMQConnection.DEFAULT_BROKER_URL;
+    private static final String USER = ActiveMQConnection.DEFAULT_USER;
+    private static final String PASSWORD = ActiveMQConnection.DEFAULT_PASSWORD;
+    private static final String URL = ActiveMQConnection.DEFAULT_BROKER_URL;
 
     private Connection connection = null;
     private Session session = null;
@@ -33,26 +29,34 @@ public class Receiver {
         Destination destination;
 
         try {
-
-            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, url);
+            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(USER, PASSWORD, URL);
             connection = connectionFactory.createConnection();
             connection.start();
 
             // Create the session
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            destination = session.createTopic( this.topic );
+            destination = session.createTopic(this.topic);
 
             consumer = session.createConsumer(destination);
             consumer.setMessageListener(new LocalListener(isMain));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error setting up receiver", e);
         }
     }
 
     public void stop() {
-        try { consumer.close(); } catch ( Exception e ) {}
-        try { session.close(); } catch ( Exception e ) {}
-        try { connection.close(); } catch ( Exception e ) {}
+        try {
+            consumer.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            session.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            connection.close();
+        } catch (Exception ignored) {
+        }
     }
 }

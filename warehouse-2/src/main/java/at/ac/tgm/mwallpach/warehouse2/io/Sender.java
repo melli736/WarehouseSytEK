@@ -6,15 +6,13 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-
 public class Sender {
 
-    Logger logger = LoggerFactory.getLogger(Sender.class);
+    private final Logger logger = LoggerFactory.getLogger(Sender.class);
 
-    private static String user = ActiveMQConnection.DEFAULT_USER;
-    private static String password = ActiveMQConnection.DEFAULT_PASSWORD;
-    private static String url = ActiveMQConnection.DEFAULT_BROKER_URL;
+    private static final String USER = ActiveMQConnection.DEFAULT_USER;
+    private static final String PASSWORD = ActiveMQConnection.DEFAULT_PASSWORD;
+    private static final String URL = ActiveMQConnection.DEFAULT_BROKER_URL;
 
     private Connection connection = null;
     private Session session = null;
@@ -33,21 +31,20 @@ public class Sender {
 
         try {
 
-            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory( user, password, url );
+            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(USER, PASSWORD, URL);
             connection = connectionFactory.createConnection();
             connection.start();
 
             // Create the session
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            destination = session.createTopic( this.topic );
+            destination = session.createTopic(this.topic);
 
             // Create the producer.
             producer = session.createProducer(destination);
-            producer.setDeliveryMode( DeliveryMode.NON_PERSISTENT );
+            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
         } catch (Exception e) {
-            System.out.println("[MessageProducer] Caught: " + e);
-            e.printStackTrace();
+            logger.error("Error setting up sender", e);
         }
     }
 
@@ -57,13 +54,23 @@ public class Sender {
             producer.send(textMessage);
 
         } catch (JMSException e) {
+            logger.error("Error sending message", e);
             throw new RuntimeException(e);
         }
     }
 
     public void stop() {
-        try { producer.close(); } catch ( Exception e ) {}
-        try { session.close(); } catch ( Exception e ) {}
-        try { connection.close(); } catch ( Exception e ) {}
+        try {
+            producer.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            session.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            connection.close();
+        } catch (Exception ignored) {
+        }
     }
 }
