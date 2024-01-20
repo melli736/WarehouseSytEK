@@ -10,61 +10,49 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class Receiver implements MessageListener {
+public class Receiver {
 
-    private Logger logger = LoggerFactory.getLogger(Receiver.class);
+    Logger logger = LoggerFactory.getLogger(Receiver.class);
 
-    private boolean isMain;
-    private Sender acknowledgementSender;
-    private LocalListener localListener;  // Neues Feld für LocalListener
-    private String location;  // Neues Feld für den Standort
+    private static String user = ActiveMQConnection.DEFAULT_USER;
+    private static String password = ActiveMQConnection.DEFAULT_PASSWORD;
+    private static String url = ActiveMQConnection.DEFAULT_BROKER_URL;
 
-    public Receiver(String location, boolean isMain, Sender acknowledgementSender) {
-        this.location = location;  // Setzen Sie den Standort beim Initialisieren
-        this.isMain = isMain;
-        this.acknowledgementSender = acknowledgementSender;
-    }
+    private Connection connection = null;
+    private Session session = null;
+    private MessageConsumer consumer = null;
 
-    // Getter-Methode für den Standort
-    public String getLocation() {
-        return location;
-    }
+    private final String topic;
 
-    // Getter-Methode für den LocalListener
-    public LocalListener getLocalListener() {
-        return localListener;
-    }
+    public Receiver(String topic, boolean isMain) {
 
-    // Setter-Methode für den LocalListener
-    public void setLocalListener(LocalListener localListener) {
-        this.localListener = localListener;
-    }
+        this.topic = topic;
 
-    // Methode wird bei Empfang einer Nachricht aufgerufen
-    @Override
-    public void onMessage(Message message) {
+        logger.info("Receiver started on topic: " + topic);
+
+        Destination destination;
+
         try {
-            logger.info("message received, this is main: " + isMain);
 
-            if (this.isMain) {
-                // Restlicher Code bleibt unverändert
-            } else {
-                if (message instanceof TextMessage) {
-                    // Verarbeitung von Textnachrichten von Nebenstellen (Lagern)
-                    String text = ((TextMessage) message).getText();
-                    logger.info("Received " + text);
+            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(user, password, url);
+            connection = connectionFactory.createConnection();
+            connection.start();
 
-                    // Weiterleitung der Daten an den entsprechenden LocalListener
-                    LocalListener localListener = this.localListener;
-                    if (localListener != null) {
-                        localListener.onMessage(message);
-                    }
-                } else {
-                    logger.warn("Unexpected message type received in non-main listener");
-                }
-            }
+            // Create the session
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            destination = session.createTopic( this.topic );
+
+            consumer = session.createConsumer(destination);
+            consumer.setMessageListener(new LocalListener(isMain));
+
         } catch (Exception e) {
-            logger.error("Error processing message: " + e.getMessage(), e);
+            e.printStackTrace();
         }
+    }
+
+    public void stop() {
+        try { consumer.close(); } catch ( Exception e ) {}
+        try { session.close(); } catch ( Exception e ) {}
+        try { connection.close(); } catch ( Exception e ) {}
     }
 }
