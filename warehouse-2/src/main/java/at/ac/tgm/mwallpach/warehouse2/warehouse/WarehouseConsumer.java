@@ -1,4 +1,4 @@
-package at.ac.tgm.mstuppnig.warehouse2.warehouse;
+package at.ac.tgm.mwallpach.warehouse2.warehouse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

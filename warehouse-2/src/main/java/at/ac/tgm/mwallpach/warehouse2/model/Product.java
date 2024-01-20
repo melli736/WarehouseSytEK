@@ -1,4 +1,4 @@
-package at.ac.tgm.mstuppnig.warehouse2.model;
+package at.ac.tgm.mwallpach.warehouse2.model;
 
 import java.util.Random;
 

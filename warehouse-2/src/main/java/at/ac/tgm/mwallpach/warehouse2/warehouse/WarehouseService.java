@@ -1,6 +1,6 @@
-package at.ac.tgm.mstuppnig.warehouse2.warehouse;
+package at.ac.tgm.mwallpach.warehouse2.warehouse;
 
-import at.ac.tgm.mstuppnig.warehouse2.model.WarehouseData;
+import at.ac.tgm.mwallpach.warehouse2.model.WarehouseData;
 import org.springframework.stereotype.Service;
 
 @Service
