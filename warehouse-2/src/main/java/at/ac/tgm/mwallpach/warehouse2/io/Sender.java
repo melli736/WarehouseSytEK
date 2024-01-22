@@ -20,13 +20,13 @@ public class Sender {
 
     private final String topic;
 
-    public Sender(String topic) {
+    public Sender(String topic, boolean isTopic) {
 
         this.topic = topic;
 
         logger.info("Sender started on topic: " + topic);
 
-        // Create the connection.
+        // Verbindung erstellen.
         Destination destination;
 
         try {
@@ -35,16 +35,21 @@ public class Sender {
             connection = connectionFactory.createConnection();
             connection.start();
 
-            // Create the session
+            // Erstellen der Session
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            destination = session.createTopic(this.topic);
+            if(isTopic) {
+                destination = session.createTopic(this.topic);
+            }else   {
+                destination = session.createQueue(this.topic);
+            }
 
-            // Create the producer.
+
+            // Erstellen des Producers.
             producer = session.createProducer(destination);
             producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
         } catch (Exception e) {
-            logger.error("Error setting up sender", e);
+            logger.error("Fehler beim Einrichten des Senders", e);
         }
     }
 
@@ -54,7 +59,7 @@ public class Sender {
             producer.send(textMessage);
 
         } catch (JMSException e) {
-            logger.error("Error sending message", e);
+            logger.error("Fehler beim Senden der Nachricht", e);
             throw new RuntimeException(e);
         }
     }

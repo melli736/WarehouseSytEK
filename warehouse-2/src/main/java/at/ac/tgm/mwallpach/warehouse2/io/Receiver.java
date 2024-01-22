@@ -20,7 +20,7 @@ public class Receiver {
 
     private final String topic;
 
-    public Receiver(String topic, boolean isMain) {
+    public Receiver(String topic, boolean isTopic) {
 
         this.topic = topic;
 
@@ -33,15 +33,20 @@ public class Receiver {
             connection = connectionFactory.createConnection();
             connection.start();
 
-            // Create the session
+            // Erstellen der Session
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            destination = session.createTopic(this.topic);
+            if(isTopic) {
+                destination = session.createTopic(this.topic);
+            }
+            else {
+                destination = session.createQueue(this.topic);
+            }
 
             consumer = session.createConsumer(destination);
-            consumer.setMessageListener(new LocalListener(isMain));
+            consumer.setMessageListener(new LocalListener(topic, isTopic));
 
         } catch (Exception e) {
-            logger.error("Error setting up receiver", e);
+            logger.error("Fehler beim Einrichten des Receivers", e);
         }
     }
 

@@ -1,12 +1,16 @@
 package at.ac.tgm.mwallpach.warehouse2.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
+
 public class WarehouseData {
-	
+
 	private String warehouseID;
 	private String warehouseName;
 	private String timestamp;
@@ -18,11 +22,11 @@ public class WarehouseData {
 	private ArrayList<Product> productData;
 
 	/**
-	 * Constructor
+	 * Konstruktor
 	 */
 	public WarehouseData() {
 
-		int r = new Random().nextInt(6) + 4; 
+		int r = new Random().nextInt(6) + 4;
 
 		productData = new ArrayList<Product>(r);
 
@@ -101,11 +105,17 @@ public class WarehouseData {
 	}
 
 	/**
-	 * Methods
+	 * Methoden
 	 */
 	@Override
 	public String toString() {
-		String info = String.format("Warehouse Info: ID = %s, timestamp = %s", warehouseID, timestamp );
-		return info;
+
+		try {
+			return new ObjectMapper().writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
+//		String info = String.format("Warehouse Info: ID = %s, timestamp = %s", warehouseID, timestamp );
+//		return info;
 	}
 }

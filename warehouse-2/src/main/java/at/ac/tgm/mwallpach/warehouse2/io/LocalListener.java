@@ -1,5 +1,7 @@
 package at.ac.tgm.mwallpach.warehouse2.io;
 
+import at.ac.tgm.mwallpach.warehouse2.Warehouse2Application;
+import at.ac.tgm.mwallpach.warehouse2.model.WarehouseData;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
 import jakarta.jms.TextMessage;
@@ -11,13 +13,14 @@ import java.util.List;
 
 public class LocalListener implements MessageListener {
 
-    public static final List<String> data = new ArrayList<>();
 
     private final Logger logger = LoggerFactory.getLogger(Receiver.class);
 
     private final boolean isMain;
+    private final String topic;
 
-    public LocalListener(boolean isMain) {
+    public LocalListener(String topic, boolean isMain) {
+        this.topic = topic;
         this.isMain = isMain;
     }
 
@@ -25,18 +28,26 @@ public class LocalListener implements MessageListener {
     public void onMessage(Message message) {
         try {
             String text = ((TextMessage) message).getText();
-            if (this.isMain && !text.startsWith("Main:")) {
-                logger.info("Received " + text);
-                data.add(text);
-            } else if (!this.isMain && text.startsWith("Main:")) {
-                logger.info("Time From " + text);
+            logger.info("Received message: " + text);
+
+
+
+            if(this.topic.equals("WarehouseTopic_Main")) {
+                // listened auf die ACKS (auf die Topic)
+                logger.info("acknowledged: " + text);
+                Warehouse2Application.timestampsToAcknowledge.remove(text);
+
             }
+            else {
+                // listened auf die JSON Nachrichten (auf die Queues)
+                logger.info("got data from queue: " + text);
+                Warehouse2Application.savedData.add(text);
+            }
+
+            (message).acknowledge();
         } catch (Exception e) {
             logger.error("Error processing message", e);
         }
     }
 
-    public static List<String> getData() {
-        return data;
-    }
 }

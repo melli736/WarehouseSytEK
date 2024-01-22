@@ -1,36 +1,49 @@
+// Warehouse2Application.java
 package at.ac.tgm.mwallpach.warehouse2;
 
-import at.ac.tgm.mwallpach.warehouse2.io.LocalListener;
+import at.ac.tgm.mwallpach.warehouse2.model.WarehouseData;
+import at.ac.tgm.mwallpach.warehouse2.warehouse.WarehouseSimulation;
 import at.ac.tgm.mwallpach.warehouse2.io.Receiver;
 import at.ac.tgm.mwallpach.warehouse2.io.Sender;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @SpringBootApplication
-public class Warehouse2Application {
+public class Warehouse2Application implements CommandLineRunner {
 
-	public static Sender sender;
-	public static Receiver receiver;
+	public static Sender[] senders;
 
-	public static boolean main = false;
+	public static List<String> savedData;
 
-	public static void main(String[] args) throws InterruptedException {
-		SpringApplication app = new SpringApplication(Warehouse2Application.class);
-		app.setDefaultProperties(Collections.singletonMap("server.port", Integer.valueOf(args[1])));
-		app.run(args);
+	public static Set<String> timestampsToAcknowledge;
 
-		String topic = args[0];
+	public static void main(String[] args) {
+		SpringApplication.run(Warehouse2Application.class, args);
+	}
 
-		if(topic.equals("main")) {
-			main = true;
+	@Override
+	public void run(String... args) {
+		savedData = new ArrayList<>();
+		timestampsToAcknowledge = new HashSet<>();
+		senders = new Sender[] {
+				new Sender("WarehouseTopic_Main", true),
+				new Sender("WarehouseTopic_001", false),
+				new Sender("WarehouseTopic_002", false),
+				new Sender("WarehouseTopic_003", false)
+		};
+		var receivers = new Receiver[]{
+				new Receiver("WarehouseTopic_Main", true),
+				new Receiver("WarehouseTopic_001", false),
+				new Receiver("WarehouseTopic_002", false),
+				new Receiver("WarehouseTopic_003", false),
+		};
 
-			receiver = new Receiver("war1", true);
-			sender = new Sender("war1");
-		}else {
-			receiver = new Receiver(topic, false);
-			sender = new Sender(topic);
-		}
 	}
 }
